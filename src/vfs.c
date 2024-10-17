@@ -2157,6 +2157,7 @@ int VfsPoll(sqlite3_vfs *vfs,
 	struct vfsShm *shm;
 	struct vfsWal *wal;
 	int rv;
+	unsigned i;
 
 	v = (struct vfs *)(vfs->pAppData);
 	database = vfsDatabaseLookup(v, filename);
@@ -2186,6 +2187,10 @@ int VfsPoll(sqlite3_vfs *vfs,
 		rv = vfsShmLock(shm, 0, 1, SQLITE_SHM_EXCLUSIVE);
 		if (rv != 0) {
 			tracef("shm lock failed %d", rv);
+			for (i = 0; i < *n; i++) {
+				sqlite3_free((*frames)[i].data);
+			}
+			sqlite3_free(*frames);
 			return rv;
 		}
 		vfsAmendWalIndexHeader(database);
